@@ -1,4 +1,4 @@
-covs <- read.csv("original/covariates.csv", header = TRUE)
+covs <- read.csv("data/original/covariates.csv", header = TRUE)
 
 source("R/prepare_mortality.R")
 source("R/prepare_disaster.R")
@@ -6,6 +6,10 @@ source("R/prepare_conflict.R")
 
 #put all data frames into list
 alllist <- list(confdata, mortalities_merge, disasters)
+
+
+
+
 
 #merge all data frames in list
 alllist |> reduce(full_join, by = c('ISO', 'year')) -> finaldata0
@@ -20,4 +24,4 @@ finaldata <- finaldata |>
          earthquake = replace_na(earthquake, 0),
          totdeath = replace_na(totdeath, 0))
 
-write.csv(finaldata, file = "analytical/finaldata.csv", row.names = FALSE)
+write.csv(finaldata, file = "data/analytical/finaldata.csv", row.names = FALSE)

@@ -1,0 +1,31 @@
+---
+title: "EDA"
+format: html
+editor: visual
+---
+
+## Data Loading and Initial Overview
+
+```{r}
+
+# Load the dataset
+data <- read.csv("/Users/wangsiwei/Desktop/version_control/armed_conflict/data/analytical/finaldata.csv", header = TRUE)
+
+# Display the first few rows
+#head(data)
+
+# Overview of the structure of the dataset
+#str(data)
+
+# Summary statistics
+#summary(data)
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
