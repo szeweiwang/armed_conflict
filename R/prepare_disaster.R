@@ -23,11 +23,10 @@ data_dummy <- data_subset %>%
          earthquake = ifelse(Disaster.Type == "Earthquake", 1, 0))
 
 
-data_final = data_dummy %>% group_by(year,ISO)  %>%
+disasters <- data_dummy %>% group_by(year,ISO)  %>%
   summarise(drought = sum(drought), 
             earthquake = sum(earthquake), 
             .groups = 'drop')
 
 
-# View the first few rows of the resulting data
-head(data_final)
+
