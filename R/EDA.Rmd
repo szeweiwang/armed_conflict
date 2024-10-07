@@ -1,0 +1,189 @@
+---
+title: "EDA"
+author: "Szewei Wang"
+date: "2024-10-07"
+output: pdf_document
+---
+
+## Data Loading and Initial Overview
+
+```{r}
+# Load necessary libraries
+library(tidyverse)
+library(naniar)
+library(corrplot)
+library(ggplot2)
+library(dplyr)
+
+# Load the dataset
+data <- read.csv("/Users/wangsiwei/Desktop/version_control/armed_conflict/data/analytical/finaldata.csv", header = TRUE)
+
+# Display the first few rows
+head(data)
+
+# Overview of the structure of the dataset
+str(data)
+
+# Summary statistics
+summary(data)
+```
+
+**Insight**: - The dataset contains various economic, demographic, and environmental indicators. - The structure overview shows numeric variables like `gdp1000`, `popdens`, and mortality rates. - The summary statistics reveal missing values in some columns (like GDP), which may need further attention.
+
+```{r}
+# Check for missing values
+missing_values <- colSums(is.na(data))
+missing_values
+```
+
+**Insight**: - We can observe missing values in several columns, especially `gdp1000`. Handling these missing values will be essential for analysis and interpretation.
+
+```{r}
+# Descriptive statistics for numeric variables
+numeric_vars <- data %>% select(where(is.numeric))
+summary(numeric_vars)
+```
+
+**Insight**: - The summary confirms wide variability across numeric variables. For example, `gdp1000` shows a high range of values, likely due to differences in economic output among countries.
+
+## Univariate Analysis
+
+```{r}
+# GDP distribution
+ggplot(data, aes(x = gdp1000)) + 
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black") +
+  labs(title = "Histogram of GDP (in 1000s)", x = "GDP (1000s USD)", y = "Count")
+
+# Population density distribution
+ggplot(data, aes(x = popdens)) + 
+  geom_histogram(binwidth = 10, fill = "green", color = "black") +
+  labs(title = "Histogram of Population Density", x = "Population Density", y = "Count")
+```
+
+**Insight**: - GDP distribution is right-skewed, suggesting that most countries have lower GDPs, while a few have significantly higher values. - Population density also shows a right-skew, with most countries having low-to-moderate densities and fewer countries having high densities.
+
+```{r}
+# Boxplot of GDP by region
+ggplot(data, aes(x = region, y = gdp1000, fill = region)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of GDP by Region", x = "Region", y = "GDP (1000s USD)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+**Insight**: - There are notable differences in GDP across regions, with some regions exhibiting significantly higher GDPs. The boxplot shows high variation within regions as well, indicating economic disparity.
+
+```{r}
+# Correlation matrix
+corr_matrix <- cor(numeric_vars, use = "complete.obs")
+corrplot(corr_matrix, method = "circle")
+```
+
+**Insight**: - Several numeric variables are highly correlated, such as mortality indicators (`infmor`, `neomor`, `matmor`), which makes sense as these reflect health outcomes.
+
+```{r}
+# Scatterplot of GDP vs Population Density
+ggplot(data, aes(x = popdens, y = gdp1000)) + 
+  geom_point(alpha = 0.5, color = "blue") +
+  labs(title = "Scatterplot of GDP vs Population Density", x = "Population Density", y = "GDP (1000s USD)")
+```
+
+**Insight**: - There doesn't seem to be a strong linear relationship between population density and GDP. This suggests that while population density might influence GDP, other factors are more significant.
+
+## Regional Trends
+
+```{r}
+# Regional GDP trends over time
+ggplot(data, aes(x = year, y = gdp1000, color = region)) +
+  geom_line(stat = "summary", fun = "mean", size = 1.2) +
+  labs(title = "Average GDP over Time by Region", x = "Year", y = "GDP (1000s USD)") +
+  theme_minimal()
+```
+
+**Insight**: - GDP has been increasing for some regions over time, though the rate of increase varies. Certain regions, like North America and Europe, exhibit higher GDPs throughout.
+
+```{r}
+# Population density trends over time by region
+ggplot(data, aes(x = year, y = popdens, color = region)) +
+  geom_line(stat = "summary", fun = "mean", size = 1.2) +
+  labs(title = "Average Population Density over Time by Region", x = "Year", y = "Population Density") +
+  theme_minimal()
+```
+
+**Insight**: - Population density appears relatively stable over time, with only slight variations. Some regions exhibit consistently higher population densities.
+
+```{r}
+# Maternal mortality trends by region
+ggplot(data, aes(x = year, y = matmor, color = region)) +
+  geom_line(stat = "summary", fun = "mean", size = 1.2) +
+  labs(title = "Average Maternal Mortality over Time by Region", x = "Year", y = "Maternal Mortality (per 100,000 live births)") +
+  theme_minimal()
+```
+
+**Insight**: - Maternal mortality has been declining in most regions, with significant improvements observed in certain areas like Sub-Saharan Africa and Southern Asia.
+
+```{r}
+# Infant mortality trends by region
+ggplot(data, aes(x = year, y = infmor, color = region)) +
+  geom_line(stat = "summary", fun = "mean", size = 1.2) +
+  labs(title = "Average Infant Mortality over Time by Region", x = "Year", y = "Infant Mortality (per 1,000 live births)") +
+  theme_minimal()
+```
+
+**Insight**: - Similar to maternal mortality, infant mortality has been decreasing steadily across regions, although some regions still have higher rates than others.
+
+```{r}
+# Neonatal mortality trends by region
+ggplot(data, aes(x = year, y = neomor, color = region)) +
+  geom_line(stat = "summary", fun = "mean", size = 1.2) +
+  labs(title = "Average Neonatal Mortality over Time by Region", x = "Year", y = "Neonatal Mortality (per 1,000 live births)") +
+  theme_minimal()
+```
+
+**Insight**: - Neonatal mortality is also declining but at a slower pace compared to maternal and infant mortality, indicating potential areas for further intervention in healthcare systems.
+
+## Heatmaps
+
+```{r}
+# Heatmap for GDP by region and year
+data_gdp_heatmap <- data %>% 
+  group_by(region, year) %>%
+  summarize(mean_gdp = mean(gdp1000, na.rm = TRUE))
+
+ggplot(data_gdp_heatmap, aes(x = year, y = region, fill = mean_gdp)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "lightblue", high = "darkblue", na.value = "grey50") +
+  labs(title = "Heatmap of Average GDP by Region and Year", x = "Year", y = "Region", fill = "Mean GDP (1000s USD)") +
+  theme_minimal()
+```
+
+**Insight**: - The heatmap shows consistent GDP growth in regions like North America and Europe, while other regions like Africa and Southern Asia lag behind.
+
+```{r}
+# Heatmap for Population Density by region and year
+data_popdens_heatmap <- data %>% 
+  group_by(region, year) %>%
+  summarize(mean_popdens = mean(popdens, na.rm = TRUE))
+
+ggplot(data_popdens_heatmap, aes(x = year, y = region, fill = mean_popdens)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "lightgreen", high = "darkgreen", na.value = "grey50") +
+  labs(title = "Heatmap of Population Density by Region and Year", x = "Year", y = "Region", fill = "Mean Pop. Density") +
+  theme_minimal()
+```
+
+**Insight**: - The population density heatmap highlights regions with higher densities, such as Southern Asia and Sub-Saharan Africa, while other regions have more sparse populations.
+
+```{r}
+# Comparing multiple mortality indicators by region
+mortality_data <- data %>% 
+  select(region, year, matmor, infmor, neomor, un5mor) %>%
+  gather(key = "mortality_type", value = "mortality_rate", matmor, infmor, neomor, un5mor)
+
+ggplot(mortality_data, aes(x = year, y = mortality_rate, color = region)) +
+  geom_line(stat = "summary", fun = "mean", size = 1.2) +
+  facet_wrap(~mortality_type, scales = "free_y") +
+  labs(title = "Mortality Trends by Region (Various Indicators)", x = "Year", y = "Mortality Rate") +
+  theme_minimal()
+```
+
+**Insight**: - This visualization clearly shows the downward trend in mortality
