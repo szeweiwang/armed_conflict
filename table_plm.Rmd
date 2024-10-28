@@ -1,0 +1,80 @@
+---
+title: "panel_data"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-10-28"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, results = 'hide'}
+plmdata <- read.csv("Clean_Data/armed_conflict_final.csv")
+```
+
+```{r}
+v3 <- mutate(plmdata, gdp1000, log(gdp1000))
+
+plm_log <- plm(Maternal_Mortality ~ is.conflict + log(gdp1000) + OECD + popdens + urban + 
+                  agedep + male_edu + temp + rainfall1000 + earthquake + drought,
+              index = c("ISO", "year"),
+              effect = "twoways",
+              model = "within",
+              data = v3)
+
+
+summary(plm_log)
+
+```
+
+```{r}
+
+```
+```{r}
+
+
+matmormod1 <- plm( Maternal_Mortality ~ is.conflict + log(gdp1000) + OECD + popdens + urban + 
+                  agedep + male_edu + temp + rainfall1000 + earthquake + drought,
+                  index = c("ISO" , "year"),
+                  effect = "twoways",
+                  model = "within", data = v3)
+
+
+un5mormod1 <- plm(Under_5_Mortality ~ is.conflict + log(gdp1000) + OECD + popdens + urban + 
+                  agedep + male_edu + temp + rainfall1000 + earthquake + drought,
+                  index = c("ISO" , "year"),
+                  effect = "twoways",
+                  model = "within", data = v3)
+
+infmormod1 <- plm(Infant_Mortality ~ is.conflict + log(gdp1000) + OECD + popdens + urban + 
+                  agedep + male_edu + temp + rainfall1000 + earthquake + drought,
+                  index = c("ISO" , "year"),
+                  effect = "twoways",
+                  model = "within", data = v3)
+
+
+neomormod1 <- plm( Neonatal_Mortality ~ is.conflict + log(gdp1000) + OECD + popdens + urban + 
+                  agedep + male_edu + temp + rainfall1000 + earthquake + drought,
+                  index = c("ISO" , "year"),
+                  effect = "twoways",
+                  model = "within", data = v3)
+```
+
+```{r}
+screenreg(list(matmormod1, un5mormod1, infmormod1, neomormod1),
+          custom.coef.names = c("Conflict", "Log(GDP per 1000)", "OECD", "Population Density", 
+                                "Urbanization", "Age Dependency Ratio", "Male Education", 
+                                "Temperature", "Rainfall (in 1000s)", "Earthquake", "Drought"),
+          custom.model.names = c("Maternal Mortality", "Under 5 Mortality", 
+                                 "Infant Mortality", "Neonatal Mortality"),
+          digits = 3)
+```
+```{r}
+
+
+```
+```{r}
+
+```
